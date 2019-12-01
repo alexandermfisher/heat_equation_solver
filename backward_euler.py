@@ -47,7 +47,6 @@ print("lambda=",lmbda)
 main_diag  = np.zeros(mx+1)
 lower_diag = np.zeros(mx)
 upper_diag = np.zeros(mx)
-solution_b = np.zeros(mx+1)
 
 # Insert main diaginals
 main_diag[:] = 1 + 2*lmbda
@@ -78,7 +77,7 @@ for i in range(0, mx+1):
 for n in range(0, mt):
     b = u_j
     b[0] = b[-1] = 0
-    u_jn[:] = spsolve(A, b)
+    u_jn[:] = spsolve(A,b)
 
     # Update u_j
     u_j[:] = u_jn[:]
