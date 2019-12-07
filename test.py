@@ -1,6 +1,6 @@
 ### Test File
 
-
+import backward_euler as bc
 import crank_nicolson as cn
 import numpy as np
 import pylab as pl
@@ -45,10 +45,14 @@ mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
-u_j = cn.crank_nicolson_solver_homogenous_BC(u_I, params)
+
+#### Solve using either crank_nicolson or bacward euler methods ####
+
+#u_j = cn.crank_nicolson_solver_homogenous_BC(u_I, params)
+u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
 
 
-# plot the final result and exact solution
+### plot the final result and exact solution ###
 
 x = np.linspace(0, L, mx+1)     # mesh points in space
 t = np.linspace(0, T, mt+1)     # mesh points in time
