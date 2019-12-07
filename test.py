@@ -48,8 +48,8 @@ params = [kappa,L,T,mx,mt]
 
 #### Solve using either crank_nicolson or bacward euler methods ####
 
-#u_j = cn.crank_nicolson_solver_homogenous_BC(u_I, params)
-u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
+u_j = cn.crank_nicolson_solver_homogeneous_BC(u_I, params)
+#u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
 
 
 ### plot the final result and exact solution ###
@@ -66,6 +66,11 @@ pl.show()
 
 ### --------------------------------------------------------------###
 
+
+
+# Problem 2"
+
+#   u_t = kappa u_xx  0<x<L, 0<t<T
 
 
 
