@@ -37,39 +37,41 @@ def crank_nicolson_solver_homogeneous_BC(init_con, params):
     # Data Structure for linear system using sparse matrices:
 
     # Matrix A
-    main_diag_A  = np.zeros(mx+1)
-    lower_diag_A = np.zeros(mx)
-    upper_diag_A = np.zeros(mx)
+    main_diag_A  = np.zeros(mx-1)
+    lower_diag_A = np.zeros(mx-2)
+    upper_diag_A = np.zeros(mx-2)
 
     main_diag_A[:] = 1 + lmbda
     lower_diag_A[:] = -lmbda/2
     upper_diag_A[:] = -lmbda/2
 
+
+    """
     # Insert boundary conditions
     main_diag_A[0] = 1; main_diag_A[-1] = 1
     upper_diag_A[0] = 0 ; lower_diag_A[-1] = 0
+    """
 
-
-    A = diags(diagonals=[main_diag_A, lower_diag_A, upper_diag_A],offsets=[0, -1, 1], shape=(mx+1, mx+1),format="csr")
-
+    A = diags(diagonals=[main_diag_A, lower_diag_A, upper_diag_A],offsets=[0, -1, 1], shape=(mx-1, mx-1),format="csr")
+    print(np.shape(A))
 
     # Matrix B
-    main_diag_B = np.zeros(mx+1)
-    lower_diag_B = np.zeros(mx)
-    upper_diag_B = np.zeros(mx)
+    main_diag_B = np.zeros(mx-1)
+    lower_diag_B = np.zeros(mx-2)
+    upper_diag_B = np.zeros(mx-2)
 
     main_diag_B[:] = 1 - lmbda
     lower_diag_B[:] = lmbda/2
     upper_diag_B[:] = lmbda/2
 
-
+    """
     # Insert boundary conditions coefficients
     main_diag_B[0] = 1; main_diag_B[mx] = 1
     upper_diag_B[0] = 0 ; lower_diag_B[-1] = 0
+    """
 
-
-    B = diags(diagonals=[main_diag_B, lower_diag_B, upper_diag_B],offsets=[0, -1, 1], shape=(mx+1, mx+1),format="csr")
-
+    B = diags(diagonals=[main_diag_B, lower_diag_B, upper_diag_B],offsets=[0, -1, 1], shape=(mx-1, mx-1),format="csr")
+    print(np.shape(B))
 
     # set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
@@ -81,11 +83,11 @@ def crank_nicolson_solver_homogeneous_BC(init_con, params):
 
 
     for n in range(0, mt):
-        b = u_j
-        u_jn[:] = spsolve(A, B.dot(b))
+        b = u_j[1:-1]
+        u_jn[1:-1] = spsolve(A, B.dot(b))
     
         # Update u_j
-        u_j[:] = u_jn[:]
+        u_j[1:-1] = u_jn[1:-1]
         u_j[0] = u_j[-1] = 0
 
     return u_j
