@@ -16,6 +16,7 @@ from scipy.sparse.linalg import spsolve
 kappa = 1.0   # diffusion constant
 L=1.0         # length of spatial domain
 T=0.5        # total time to solve for
+
 def u_I(x):
     # initial temperature distribution
     y = np.sin(pi*x/L)
@@ -28,8 +29,8 @@ def u_exact(x,t):
 
 
 # set numerical parameters
-mx = 1000     # number of gridpoints in space
-mt = 2000   # number of gridpoints in time
+mx = 10     # number of gridpoints in space
+mt = 20  # number of gridpoints in time
 
 x = np.linspace(0, L, mx+1)     # mesh points in space
 t = np.linspace(0, T, mt+1)     # mesh points in time
@@ -53,12 +54,14 @@ main_diag[:] = 1 + 2*lmbda
 lower_diag[:] = -lmbda
 upper_diag[:] = -lmbda
 
-# Insert boundary conditions
-main_diag[0] = 0; main_diag[mx] = 0
+# Insert boundary conditions coeffcients
+main_diag[0] = 1; main_diag[-1] = 1
+upper_diag[0] = 0 ; lower_diag[-1] = 0
+
 
 
 A = diags(diagonals=[main_diag, lower_diag, upper_diag],offsets=[0, -1, 1], shape=(mx+1, mx+1),format="csr")
-#print(A.todense())  # Check that A is correct
+print(A.todense())  # Check that A is correct
 
 
 
@@ -68,19 +71,21 @@ u_j = np.zeros(x.size)        # u at current time step
 u_jn = np.zeros(x.size)      # u at next time step
 
 
-
 # Set initial condition
-for i in range(0, mx+1):
-    u_j[i] = u_I(x[i])
+u_j = u_I(x)
+u_j[0] = u_j[-1] = 0
 
 
-for n in range(0, mt):
+
+
+for n in range(0, mt+1):
     b = u_j
-    b[0] = b[-1] = 0
     u_jn[:] = spsolve(A,b)
 
     # Update u_j
     u_j[:] = u_jn[:]
+    u_j[0] = u_j[-1] = 0
+
 
 
 
