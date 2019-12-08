@@ -12,7 +12,7 @@ import math
 
 
 
-
+"""
 ###------------------------------------------------------###
 
 
@@ -48,13 +48,14 @@ mx = 100    # number of gridpoints in space
 mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
-
+left_BC_fun = lambda t:  0*t + 0
+right_BC_fun = lambda t: 0*t + 0
 
 #### Solve using either crank_nicolson or bacward euler methods ####
 
 #u_j = cn.crank_nicolson_solver_homogeneous_BC(u_I, params)
-u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
-
+#u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
+#u_j = bc.backward_euler_solver_dirichlet_BC(u_I,params)
 
 ### plot the final result and exact solution ###
 
@@ -70,7 +71,7 @@ pl.show()
 
 
 
-
+"""
 ### --------------------------------------------------------------###
 
 
@@ -90,7 +91,7 @@ pl.show()
 # set problem parameters/functions
 kappa = 9.0   # diffusion constant
 L=2.0         # length of spatial domain
-T=100        # total time to solve for
+T=5        # total time to solve for
 
 left_BC_fun = lambda t:  0*t + 0
 right_BC_fun = lambda t: 0*t + 8
@@ -103,8 +104,7 @@ def u_I(x):
 def u_exact(x,t):
 
     y = 4*x
-    y1 = [0]
-    print(type(y1))
+    y1 = []
     for k in range(1, 20, 2):
         y1.append(64/((k*(np.pi))**3)*math.exp((-9/4)*((np.pi)**2)*(k**2)*t)*np.sin((k*np.pi*x)/2))
 
@@ -125,7 +125,7 @@ params = [kappa,L,T,mx,mt]
 #### Solve using either crank_nicolson or bacward euler methods ####
 
 
-u_j = bc.backward_euler_solver_dirichlet_BC(u_I,left_BC_fun,right_BC_fun,params)
+u_j, time = bc.backward_euler_solver_dirichlet_BC(u_I,params,left_BC_fun, right_BC_fun, lambda x,t: 20*x*t)
 
 
 ### plot the final result and exact solution ###
@@ -140,6 +140,7 @@ pl.ylabel('u(x,0.5)')
 pl.legend(loc='upper right')
 pl.show()
 
+print(float(time))
 
 
 
