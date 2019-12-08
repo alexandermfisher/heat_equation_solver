@@ -67,14 +67,17 @@ def backward_euler_solver_homogenous_BC(init_con,params):
 
 
 
-def backward_euler_solver_dirichlet_BC(init_con,left_BC_fun,right_BC_fun,params):
+def backward_euler_solver_dirichlet_BC(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
+
+    import time;  t0 = time.clock()  # for measuring the CPU time
 
     kappa, L, T, mx, mt = params
-    u_I = init_con
+    u_I = init_con; f = source_fun
     x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
-
+    
     left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
     left_BC = np.append(left_BC,[left_BC_fun(T+deltat)]);  right_BC = np.append(right_BC,[right_BC_fun(T+deltat)])
+    t = np.append(t,deltat*(mt+1))
 
 
     # Data Structure for linear system using sparse matrices:
@@ -101,7 +104,7 @@ def backward_euler_solver_dirichlet_BC(init_con,left_BC_fun,right_BC_fun,params)
     
 
     for n in range(0, mt+1):
-        b = u_j[1:-1]
+        b = u_j[1:-1] + deltat*f(x[1:-1], t[n+1])
         b[0] = b[0] + lmbda*left_BC[n+1]
         b[-1] = b[-1] + lmbda*right_BC[n+1]
     
@@ -112,7 +115,11 @@ def backward_euler_solver_dirichlet_BC(init_con,left_BC_fun,right_BC_fun,params)
         u_j[0] = left_BC[n+1] 
         u_j[-1] = right_BC[n+1]
 
-    return u_j
+
+    t1 = time.clock()
+    execution_time = float(t1-t0)
+
+    return u_j, execution_time
 
 
 
