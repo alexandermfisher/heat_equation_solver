@@ -9,7 +9,7 @@ from scipy.sparse.linalg import spsolve
 
 
 
-### Iniitilise x-linspace and time variables ...
+### Initilise x-linspace and time variables ...
 
 
 def initilise_numerical_variables(params):
@@ -23,7 +23,6 @@ def initilise_numerical_variables(params):
     lmbda = kappa*deltat/(deltax**2)    # mesh fourier number
 
     return x, t, deltax, deltat, lmbda
-
 
 
 
