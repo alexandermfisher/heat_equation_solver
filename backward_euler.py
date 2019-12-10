@@ -39,6 +39,7 @@ def generate_tridiag_matrix(dim, entries):
 
 
 
+
 def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
 
     import time;  t0 = time.clock()  # for measuring the CPU time
@@ -71,18 +72,19 @@ def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
 
         # Update u_j
         u_j[1:-1] = u_jn[1:-1]
-        u_j[0] = left_BC[n+1] 
-        u_j[-1] = right_BC[n+1]
+        u_j[0] = left_BC[n] 
+        u_j[-1] = right_BC[n]
 
 
     t1 = time.clock()
     run_time = float(t1-t0)
 
-    return u_j, run_time
+    return u_j
 
 
 
-def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
+
+def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t+0*x):
 
     import time;  t0 = time.clock()  # for measuring the CPU time
 
@@ -110,7 +112,7 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
         u_j[i] = u_I(x[i])
 
     for n in range(1, mt+1):
-        b = u_j + deltat*f(x[1:-1], t[n])
+        b = u_j + deltat*f(x,t[n])
         b[0] = b[0] - 2*lmbda*deltax*left_BC[n]
         b[-1] = b[-1] + 2*lmbda*deltax*right_BC[n]
     
@@ -124,7 +126,7 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     t1 = time.clock()
     run_time = float(t1-t0)
 
-    return u_j, run_time
+    return u_j
 
 
 
