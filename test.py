@@ -4,20 +4,15 @@ import backward_euler as bc
 import crank_nicolson as cn
 import numpy as np
 import pylab as pl
-from math import pi
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
-from math import exp
+from math import exp, pi, cos, sin
 import math
 
 
 
-"""
 ###------------------------------------------------------###
-
-
-
-
+"""
 
 # Problem 1: 
 
@@ -54,8 +49,8 @@ right_BC_fun = lambda t: 0*t + 0
 #### Solve using either crank_nicolson or bacward euler methods ####
 
 #u_j = cn.crank_nicolson_solver_homogeneous_BC(u_I, params)
-#u_j = bc.backward_euler_solver_homogenous_BC(u_I,params)
-#u_j = bc.backward_euler_solver_dirichlet_BC(u_I,params)
+#u_j, run_time = bc.backward_euler_solver_dirichlet(u_I,params)
+u_j = bc.backward_euler_solver_neumann(u_I,params)
 
 ### plot the final result and exact solution ###
 
@@ -70,15 +65,9 @@ pl.legend(loc='upper right')
 pl.show()
 
 
-
 """
 ### --------------------------------------------------------------###
-
-
-
-
-
-
+"""
 
 # Problem 2"
 
@@ -91,7 +80,7 @@ pl.show()
 # set problem parameters/functions
 kappa = 9.0   # diffusion constant
 L=2.0         # length of spatial domain
-T=5        # total time to solve for
+T=0.5        # total time to solve for
 
 left_BC_fun = lambda t:  0*t + 0
 right_BC_fun = lambda t: 0*t + 8
@@ -112,8 +101,6 @@ def u_exact(x,t):
 
     return y
 
-xx = np.linspace(0,L,250)
-
 
 # set numerical parameters
 mx = 100    # number of gridpoints in space
@@ -125,7 +112,7 @@ params = [kappa,L,T,mx,mt]
 #### Solve using either crank_nicolson or bacward euler methods ####
 
 
-u_j, time = bc.backward_euler_solver_dirichlet_BC(u_I,params,left_BC_fun, right_BC_fun, lambda x,t: 20*x*t)
+u_j, time = bc.backward_euler_solver(u_I,params,left_BC_fun, right_BC_fun, lambda x,t: -20*x*t)
 
 
 ### plot the final result and exact solution ###
@@ -144,8 +131,71 @@ print(float(time))
 
 
 
+
+"""
 ### --------------------------------------------------------------###
 
+# Problem 3:
+
+#Backward method to solve 1D reaction-diffusion equation:
+#        u_t = k * u_xx
+    
+#with Neumann boundary conditions 
+#at x=0: u_x(0,t) = 0 = sin(2*np.pi)
+#at x=L: u_x(L,t) = 0 = sin(2*np.pi)
+
+#with L = 1 and initial conditions:
+#u(x,0) = (1.0/2.0)+ np.cos(2.0*np.pi*x) - (1.0/2.0)*np.cos(3*np.pi*x)
+
+#u_x(x,t) = (-4.0*(np.pi**2))np.exp(-4.0*(np.pi**2)*t)*np.cos(2.0*np.pi*x) + 
+#            (9.0/2.0)*(np.pi**2)*np.exp(-9.0*(np.pi**2)*t)*np.cos(3*np.pi*x))
+
+
+# set problem parameters/functions
+kappa = 1.0   # diffusion constant
+L=1.0         # length of spatial domain
+T=5        # total time to solve for
+
+left_BC_fun = lambda x:  sin(2*pi*x)
+right_BC_fun = lambda x: sin(2*pi*x)
+
+
+def u_I(x):
+    y = (1.0/2.0)+ cos(2.0*pi*x) - (1.0/2.0)*cos(3*pi*x)
+    return y
+
+def u_exact(x):
+    t = T
+    y = (-4.0*(pi**2))*exp(-4.0*(pi**2)*t)*cos(2.0*pi*x)+(9.0/2.0)*(pi**2)*exp(-9.0*(pi**2)*t)*cos(3*pi*x)
+    return y
+
+# set numerical parameters
+mx = 100    # number of gridpoints in space
+mt = 1000  # number of gridpoints in time
+
+params = [kappa,L,T,mx,mt]
+
+#### Solve using either crank_nicolson or bacward euler methods ####
+
+
+u_j, time = bc.backward_euler_solver_neumann(u_I,params)
+
+
+### plot the final result and exact solution ###
+
+x = np.linspace(0, L, mx+1)     # mesh points in space
+t = np.linspace(0, T, mt+1)     # mesh points in time
+pl.plot(x,u_j,'ro',label='num')
+xx = np.linspace(0,L,250)
+sol = list(map(u_exact ,xx))
+print(sol)
+pl.plot(xx,sol,'b-',label='exact')
+pl.xlabel('x')
+pl.ylabel('u(x,0.5)')
+pl.legend(loc='upper right')
+pl.show()
+
+print(float(time))
 
 
 
@@ -153,9 +203,7 @@ print(float(time))
 
 
 
-
-
-
+### --------------------------------------------------------------###
 
 
 
