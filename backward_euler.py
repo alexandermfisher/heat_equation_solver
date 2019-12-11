@@ -20,6 +20,7 @@ def initilise_numerical_variables(params):
 
     return x, t, deltax, deltat, lmbda
 
+
 def generate_tridiag_matrix(dim, entries):
 
 
@@ -36,8 +37,6 @@ def generate_tridiag_matrix(dim, entries):
 
 
     return A
-
-
 
 
 def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
@@ -82,8 +81,6 @@ def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
     return u_j
 
 
-
-
 def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t+0*x):
 
     import time;  t0 = time.clock()  # for measuring the CPU time
@@ -92,10 +89,8 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
     x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
-    left_BC = list(map(left_BC_fun,t));   right_BC = list(map(right_BC_fun,t))
+    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
     
-    
-
 
     # Data Structure for linear system using sparse matrices:
 
@@ -129,6 +124,84 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     return u_j
 
 
+def backward_euler_solver_mixed_D_to_N(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t+0*x):
+
+
+    kappa, L, T, mx, mt = params
+    u_I = init_con; f = source_fun
+    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
+
+
+    # Data Structure for linear system using sparse matrices:
+    A = generate_tridiag_matrix(mx+1,[1+2*lmbda,-lmbda])
+    A[-1,-2] = -2*lmbda;
+
+    
+    # set up the solution variables
+    u_j = np.zeros(x.size)        # u at current time step
+    u_jn = np.zeros(x.size)      # u at next time step
+
+    # Set initial condition
+    for i in range(0, mx+1):
+        u_j[i] = u_I(x[i])
+
+    u_j[0] = left_BC[0];
+
+
+    for n in range(1, mt+1):
+        b = u_j[1:] + deltat*f(x[1:], t[n])
+        b[0] = b[0] + lmbda*left_BC[n]
+        b[-1] = b[-1] + 2*lmbda*deltax*right_BC[n]
+    
+        u_jn[1:] = spsolve(A,b)
+
+        # Update u_j
+        u_j[1:] = u_jn[1:]
+        u_j[0] = left_BC[n] 
+
+
+    return u_j
+        
+
+def backward_euler_solver_mixed_N_to_D(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t+0*x):
+
+
+    kappa, L, T, mx, mt = params
+    u_I = init_con; f = source_fun
+    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
+
+
+    # Data Structure for linear system using sparse matrices:
+    A = generate_tridiag_matrix(mx+1,[1+2*lmbda,-lmbda])
+    A[0,1] = -2*lmbda;
+
+    
+    # set up the solution variables
+    u_j = np.zeros(x.size)        # u at current time step
+    u_jn = np.zeros(x.size)      # u at next time step
+
+    # Set initial condition
+    for i in range(0, mx+1):
+        u_j[i] = u_I(x[i])
+
+    u_j[-1] = right_BC[0];
+
+
+    for n in range(1, mt+1):
+        b = u_j[0:-1] + deltat*f(x[0:-1], t[n])
+        b[0] = b[0] - 2*lmbda*deltax*left_BC[n]
+        b[-1] = b[-1] + lmbda*right_BC[n]
+    
+        u_jn[0:-1] = spsolve(A,b)
+
+        # Update u_j
+        u_j[0:-1] = u_jn[0:-1]
+        u_j[-1] = right_BC[n] 
+
+
+    return u_j
 
 
 

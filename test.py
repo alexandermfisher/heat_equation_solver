@@ -8,7 +8,7 @@ from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from math import pi
 
-
+"""
 
 ###------------------------------------------------------###
 
@@ -43,8 +43,8 @@ mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
-u_j = bc.backward_euler_solver_dirichlet(u_I,params)
-
+#u_j = bc.backward_euler_solver_dirichlet(u_I,params)
+u_j = cn.crank_nicolson_solver_homogeneous_BC(u_I,params)
 
 
 ### plot the final result and exact solution ###
@@ -98,8 +98,8 @@ def u_exact(x,t):
     return y
 
 # set numerical parameters
-mx = 100    # number of gridpoints in space
-mt = 1000  # number of gridpoints in time
+mx = 1000    # number of gridpoints in space
+mt = 10000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
@@ -117,11 +117,12 @@ pl.xlabel('x')
 pl.ylabel('u(x,0.5)')
 pl.legend(loc='upper right')
 pl.show()
-
+"""
 
 ### --------------------------------------------------------------###
 
 
+"""
 
 # Problem 3:    (Homogeneous Neumann BCs)
 
@@ -150,8 +151,8 @@ def u_exact(x,t):
 
 
 # set numerical parameters
-mx = 100    # number of gridpoints in space
-mt = 1000  # number of gridpoints in time
+mx = 1000    # number of gridpoints in space
+mt = 10000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
@@ -171,7 +172,7 @@ pl.legend(loc='upper right')
 pl.show()
 
 
-
+"""
 ### --------------------------------------------------------------###
 
 
@@ -188,7 +189,7 @@ pl.show()
 # set problem parameters/functions
 kappa = 1.0   # diffusion constant
 L=1.0         # length of spatial domain
-T=10      # total time to solve for
+T=0.5   # total time to solve for
 
 
 def u_I(x):
@@ -232,6 +233,7 @@ pl.ylabel('u(x,0.5)')
 pl.legend(loc='upper right')
 pl.show()
 
+"""
 
 
 ### ------------------------------------------------------------------------###
@@ -297,7 +299,7 @@ pl.show()
 ### ------------------------------------------------------------------------###
 
 
-
+"""
 
 
 
