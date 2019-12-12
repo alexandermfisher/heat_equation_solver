@@ -1,16 +1,14 @@
 ### Test File
 
-import backward_euler as bc
-import crank_nicolson as cn
+import heat_equation_function_lib as he
 import numpy as np
 import pylab as pl
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from math import pi
 
-"""
 
-###------------------------------------------------------###
+###-----------------------------------------------------------------###
 
 
 # Problem 1:  (Homogeneous Dirichelt BCs)
@@ -43,8 +41,8 @@ mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
-#u_j = bc.backward_euler_solver_dirichlet(u_I,params)
-u_j = cn.crank_nicolson_solver_homogeneous_BC(u_I,params)
+u_j = he.backward_euler_solver_dirichlet(u_I,params)
+#u_j = he.crank_nicolson_solver_dirichlet(u_I,params)
 
 
 ### plot the final result and exact solution ###
@@ -62,7 +60,7 @@ pl.show()
 
 
 ### --------------------------------------------------------------###
-
+"""
 
 # Problem 2:    (non-homogeneous Dirichelt BCs)
 
@@ -103,7 +101,8 @@ mt = 10000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
-u_j = bc.backward_euler_solver_dirichlet(u_I,params,left_BC_fun, right_BC_fun, lambda x,t: 0*x*t)
+#u_j = bc.backward_euler_solver_dirichlet(u_I,params,left_BC_fun, right_BC_fun, lambda x,t: 0*x*t)
+#u_j = cn.crank_nicolson_solver_dirichlet(u_I,params,left_BC_fun, right_BC_fun)
 
 
 ### plot the final result and exact solution ###
@@ -117,12 +116,12 @@ pl.xlabel('x')
 pl.ylabel('u(x,0.5)')
 pl.legend(loc='upper right')
 pl.show()
-"""
 
+"""
 ### --------------------------------------------------------------###
 
 
-"""
+
 
 # Problem 3:    (Homogeneous Neumann BCs)
 
@@ -136,7 +135,7 @@ pl.show()
 # set problem parameters/functions
 kappa = 1.0   # diffusion constant
 L=1.0         # length of spatial domain
-T=1        # total time to solve for
+T=0.01      # total time to solve for
 
 
 def u_I(x):
@@ -151,12 +150,13 @@ def u_exact(x,t):
 
 
 # set numerical parameters
-mx = 1000    # number of gridpoints in space
-mt = 10000  # number of gridpoints in time
+mx = 100   # number of gridpoints in space
+mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
-u_j = bc.backward_euler_solver_neumann(u_I,params)
+u_j = he.backward_euler_solver_neumann(u_I,params)
+#u_j = cn.crank_nicolson_solver_neumann(u_I,params)
 
 
 ### plot the final result and exact solution ###
@@ -172,10 +172,10 @@ pl.legend(loc='upper right')
 pl.show()
 
 
-"""
+
 ### --------------------------------------------------------------###
 
-
+"""
 
 # Problem 4:    (Dirichelt BCs dependant on time, non-homogeneous Heat equation with source.)
 
@@ -212,14 +212,14 @@ right_BC_fun = lambda t: -np.exp(-t)+4*t+1
 
 
 # set numerical parameters
-mx = 100    # number of gridpoints in space
+mx = 10   # number of gridpoints in space
 mt = 1000  # number of gridpoints in time
 
 params = [kappa,L,T,mx,mt]
 
 
 u_j = bc.backward_euler_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
-
+u_j = cn.crank_nicolson_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
 
 ### plot the final result and exact solution ###
 
@@ -237,6 +237,9 @@ pl.show()
 
 
 ### ------------------------------------------------------------------------###
+"""
+
+
 
 # Problem 5: (non-homogeneous heat equation with non-homogeneous Neumann boundary conditions)
 
@@ -280,7 +283,8 @@ mt = 1000  # number of gridpoints in time
 params = [kappa,L,T,mx,mt]
 
 
-u_j = bc.backward_euler_solver_neumann(u_I,params,left_BC_fun,right_BC_fun,source)
+#u_j = bc.backward_euler_solver_neumann(u_I,params,left_BC_fun,right_BC_fun,source)
+u_j = cn.crank_nicolson_solver_neumann(u_I,params,left_BC_fun,right_BC_fun,source)
 
 
 ### plot the final result and exact solution ###
@@ -295,11 +299,11 @@ pl.ylabel('u(x,0.5)')
 pl.legend(loc='upper right')
 pl.show()
 
-
+"""
 ### ------------------------------------------------------------------------###
 
 
-"""
+
 
 
 

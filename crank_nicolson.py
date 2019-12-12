@@ -9,7 +9,6 @@ from scipy.sparse.linalg import spsolve
 
 
 
-### Initilise x-linspace and time variables ...
 
 
 def initilise_numerical_variables(params):
@@ -25,70 +24,113 @@ def initilise_numerical_variables(params):
     return x, t, deltax, deltat, lmbda
 
 
+def generate_tridiag_matrix(dim, entries):
 
-def crank_nicolson_solver_homogeneous_BC(init_con, params):
+
+    main_diag  = np.zeros(dim-1)
+    lower_diag = np.zeros(dim-2)
+    upper_diag = np.zeros(dim-2)
+
+    # Insert main diaginals
+    main_diag[:] =   entries[0]                   
+    lower_diag[:] =  entries[1]
+    upper_diag[:] =  entries[1]                   
+
+    A = diags(diagonals=[main_diag, lower_diag, upper_diag],offsets=[0, -1, 1], shape=(dim-1, dim-1),format="csr")
+
+
+    return A
+
+
+
+def crank_nicolson_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
 
     kappa, L, T, mx, mt = params
-    u_I = init_con
+    u_I = init_con; f = source_fun
     x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
-
+    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
 
     # Data Structure for linear system using sparse matrices:
 
-    # Matrix A
-    main_diag_A  = np.zeros(mx-1)
-    lower_diag_A = np.zeros(mx-2)
-    upper_diag_A = np.zeros(mx-2)
 
-    main_diag_A[:] = 1 + lmbda
-    lower_diag_A[:] = -lmbda/2
-    upper_diag_A[:] = -lmbda/2
+    A = generate_tridiag_matrix(mx,[2+2*lmbda,-lmbda])
 
 
-    """
-    # Insert boundary conditions
-    main_diag_A[0] = 1; main_diag_A[-1] = 1
-    upper_diag_A[0] = 0 ; lower_diag_A[-1] = 0
-    """
+    B = generate_tridiag_matrix(mx,[2-2*lmbda,lmbda])
+   
 
-    A = diags(diagonals=[main_diag_A, lower_diag_A, upper_diag_A],offsets=[0, -1, 1], shape=(mx-1, mx-1),format="csr")
-    print(np.shape(A))
-
-    # Matrix B
-    main_diag_B = np.zeros(mx-1)
-    lower_diag_B = np.zeros(mx-2)
-    upper_diag_B = np.zeros(mx-2)
-
-    main_diag_B[:] = 1 - lmbda
-    lower_diag_B[:] = lmbda/2
-    upper_diag_B[:] = lmbda/2
-
-    """
-    # Insert boundary conditions coefficients
-    main_diag_B[0] = 1; main_diag_B[mx] = 1
-    upper_diag_B[0] = 0 ; lower_diag_B[-1] = 0
-    """
-
-    B = diags(diagonals=[main_diag_B, lower_diag_B, upper_diag_B],offsets=[0, -1, 1], shape=(mx-1, mx-1),format="csr")
-    print(np.shape(B))
-
+   
     # set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
     u_jn = np.zeros(x.size)      # u at next time step
 
-    # Set initial condition  
-    u_j = u_I(x)
-    u_j[0] = u_j[-1] = 0
-
-
-    for n in range(0, mt):
-        b = u_j[1:-1]
-        u_jn[1:-1] = spsolve(A, B.dot(b))
     
+    # Set initial condition
+    for i in range(0, mx+1):    u_j[i] = u_I(x[i])
+    u_j[0] = left_BC[0];    u_j[-1] = right_BC[0]
+
+
+
+    for n in range(1, mt+1):
+        b = u_j[1:-1] + deltat*f(x[1:-1], t[n])
+        C = B.dot(b)
+        C[0] = C[0] + lmbda*(left_BC[n-1]+left_BC[n])
+        C[-1] = C[-1] + lmbda*(right_BC[n-1]+right_BC[n])
+
+        
+        u_jn[1:-1] = spsolve(A, C)
+
         # Update u_j
         u_j[1:-1] = u_jn[1:-1]
-        u_j[0] = u_j[-1] = 0
+        u_j[0] = left_BC[n] 
+        u_j[-1] = right_BC[n]
+
 
     return u_j
+
+
+def crank_nicolson_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
+
+    kappa, L, T, mx, mt = params
+    u_I = init_con; f = source_fun
+    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
+
+    # Data Structure for linear system using sparse matrices:
+
+    A = generate_tridiag_matrix(mx+2,[1+lmbda,-0.5*lmbda])
+    A[0,1] = -lmbda; A[-1,-2] = -lmbda;
+
+    B = generate_tridiag_matrix(mx+2,[1-lmbda,0.5*lmbda])
+    B[0,1] = lmbda; B[-1,-2] = lmbda;
+    
+
+   
+   
+    # set up the solution variables
+    u_j = np.zeros(x.size)        # u at current time step
+    u_jn = np.zeros(x.size)      # u at next time step
+
+    
+    # Set initial condition
+    for i in range(0, mx+1):
+        u_j[i] = u_I(x[i])
+
+    for n in range(1, mt+1):
+        b = u_j  #+ deltat*f(x[1:-1],t[n])
+        C = B.dot(b)
+        C[0] = C[0] #- 2*lmbda*deltax*(left_BC[n-1]+left_BC[n])
+        C[-1] = C[-1] #+ 2*lmbda*deltax*(right_BC[n-1]+right_BC[n])
+    
+        u_jn = spsolve(A,C)
+        # Update u_j
+        u_j = u_jn
+
+
+        return u_j
+
+
+
+
 
 

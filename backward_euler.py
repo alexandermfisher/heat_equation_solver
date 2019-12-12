@@ -20,6 +20,13 @@ def initilise_numerical_variables(params):
 
     return x, t, deltax, deltat, lmbda
 
+def initlise_sol_var_init_con(init_con, x):
+    u_j = np.zeros(x.size)        # u at current time step
+    u_jn = np.zeros(x.size)      # u at next time step
+    for i in range(0, x.size):    
+        u_j[i] = init_con(x[i])
+
+    return u_j, u_jn
 
 def generate_tridiag_matrix(dim, entries):
 
@@ -39,28 +46,25 @@ def generate_tridiag_matrix(dim, entries):
     return A
 
 
+
+
 def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t):
 
-    import time;  t0 = time.clock()  # for measuring the CPU time
 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
     x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
-    left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
+    left_BC = left_BC_fun(t) ;  right_BC = right_BC_fun(t)
     
 
     # Data Structure for linear system using sparse matrices:
     A = generate_tridiag_matrix(mx,[1+2*lmbda,-lmbda])
     
 
-    # set up the solution variables
-    u_j = np.zeros(x.size)        # u at current time step
-    u_jn = np.zeros(x.size)      # u at next time step
-
-    # Set initial condition
-    for i in range(0, mx+1):    u_j[i] = u_I(x[i])
+    u_j, u_jn = initlise_sol_var_init_con(u_I,x)
     u_j[0] = left_BC[0];    u_j[-1] = right_BC[0]
     
+
 
     for n in range(1, mt+1):
         b = u_j[1:-1] + deltat*f(x[1:-1], t[n])
@@ -75,16 +79,13 @@ def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
         u_j[-1] = right_BC[n]
 
 
-    t1 = time.clock()
-    run_time = float(t1-t0)
-
     return u_j
+
 
 
 def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t, right_BC_fun = lambda t: 0*t, source_fun = lambda x,t: 0*t+0*x):
 
-    import time;  t0 = time.clock()  # for measuring the CPU time
-
+    
 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
@@ -97,14 +98,9 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     A = generate_tridiag_matrix(mx+2,[1+2*lmbda,-lmbda])
     A[0,1] = -2*lmbda; A[-1,-2] = -2*lmbda;
 
-    
-    # set up the solution variables
-    u_j = np.zeros(x.size)        # u at current time step
-    u_jn = np.zeros(x.size)      # u at next time step
 
-    # Set initial condition
-    for i in range(0, mx+1):
-        u_j[i] = u_I(x[i])
+    u_j, u_jn = initlise_sol_var_init_con(u_I,x)
+
 
     for n in range(1, mt+1):
         b = u_j + deltat*f(x,t[n])
@@ -115,11 +111,6 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
 
         # Update u_j
         u_j = u_jn
-        
-
-
-    t1 = time.clock()
-    run_time = float(t1-t0)
 
     return u_j
 
