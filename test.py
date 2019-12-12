@@ -10,7 +10,7 @@ import pylab as pl
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from math import pi
-
+import matplotlib.pyplot as plt
 
 
 ###-----------------------------------------------------------------###
@@ -237,7 +237,7 @@ def problem_5(method = "backward"):
 
 
 ###-----------------------------------------------------------------###
-
+"""
 ### Running Tests:
 
 problem_1("backward"); problem_1("crank_nicolson")
@@ -249,13 +249,81 @@ problem_3("backward"); problem_3("crank_nicolson")
 problem_4("backward"); problem_4("crank_nicolson")
 
 problem_5("backward"); problem_5("crank_nicolson")
+"""
+
+###-----------------------------------------------------------------###
+
+### Investigating Truncation Error:
 
 
+def problem_4_truncation_error(method = "crank_nicolson"):
+    """
+    Problem 4:  Dirichelt BCs dependant on time, non-homogeneous Heat equation with source.)
+    
+    u_t = kappa u_xx + g(x,t) 0<x<L, 0<t<T
+    with dirichlet boundary conditions, u(0,t) = g1(t), u(L,t) = g2(t)
+    and prescribed initial temperature u=u_I(x) 0<=x<=L,t=0
+    """
+    # set problem parameters/functions
+    kappa = 1.0   # diffusion constant
+    L=1.0         # length of spatial domain
+    T=0.5   # total time to solve for
+
+    def u_I(x):
+        # initial temperature distribution
+        y = np.cos(pi*x) + x**2
+        return y
+
+    def u_exact(x,t):
+        # the exact solution
+        y = x**2+4*x*t+np.exp(-t)*np.cos(pi*x)
+        return y
+
+    def source(x,t):
+        # Forcing/source function in given problem
+        y = (pi**2-1)*np.exp(-t)*np.cos(pi*x)+4*x-2
+        return y
+
+    left_BC_fun = lambda t: np.exp(-t)
+    right_BC_fun = lambda t: -np.exp(-t)+4*t+1
 
 
+    def error(mt):
+
+        # set numerical parameters
+        mx = 100  # number of gridpoints in space
+        mt = mt  # number of gridpoints in time
+
+        params = [kappa,L,T,mx,mt]
+
+        if method == "backward":        u_j = solver.backward_euler_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
+        if method == "crank_nicolson":  u_j = solver.crank_nicolson_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
 
 
+        x = np.linspace(0, L, mx+1)     
+        t = np.linspace(0, T, mt+1)  
+        deltat = t[1]-t[0]
+        u_true = np.zeros(x.size)  
+        for i in range(0, x.size):  
+            u_true[i] = u_exact(x[i],T)
 
+        error = sum((u_true[:]-u_j[:])**2)
+        
+        return [deltat, error]
+    
+    
+    x1 = list(range(9,1000,10))
+    results = np.zeros((len(x1),2))
+    for i in range(len(x1)):
+        results[i,:] = error(int(x1[i]))
+
+    plt.loglog(results[:,0], results[:,1],'b-',label='exact')
+    plt.show()
+
+
+   
+
+problem_4_truncation_error()
 
 
 
