@@ -237,19 +237,19 @@ def problem_5(method = "backward"):
 
 
 ###-----------------------------------------------------------------###
-"""
+
 ### Running Tests:
 
 problem_1("backward"); problem_1("crank_nicolson")
 
-problem_2("backward"); problem_2("crank_nicolson")
+#problem_2("backward"); problem_2("crank_nicolson")
 
-problem_3("backward"); problem_3("crank_nicolson")
+#problem_3("backward"); problem_3("crank_nicolson")
 
-problem_4("backward"); problem_4("crank_nicolson")
+#problem_4("backward"); problem_4("crank_nicolson")
 
-problem_5("backward"); problem_5("crank_nicolson")
-"""
+#problem_5("backward"); problem_5("crank_nicolson")
+
 
 ###-----------------------------------------------------------------###
 
@@ -302,7 +302,7 @@ def problem_1_truncation_error(method = "backward"):
         for i in range(0, x.size):  
             u_true[i] = u_exact(x[i],T)
 
-        error = sum((u_true[:]-u_j[:])**2)
+        error = (sum((u_true[:]-u_j[:])**2))**0.5
         
         return [deltat, error]
 
@@ -327,17 +327,20 @@ def problem_1_truncation_error(method = "backward"):
         for i in range(0, x.size):  
             u_true[i] = u_exact(x[i],T)
 
-        error = sum((u_true[:]-u_j[:])**2)
+        error = (sum((u_true[:]-u_j[:])**2))**0.5
         
         return [deltax, error]
     
-    x1 = np.logspace(1, 4, 100, endpoint=True)
-    x2 = list(range(9,10000,100))
+    x1 = np.logspace(1, 5, 100, endpoint=True)
     results = np.zeros((len(x1),2))
     for i in range(len(x1)):
         results[i,:] = error_dt(int(x1[i]))
 
-    plt.loglog(results[:,0], results[:,1],'b-',label='exact')
+    fig, ax = plt.subplots()
+    ax.loglog(results[:,0], results[:,1])
+    ax.set(xlabel='deltat', ylabel='Error',
+       title='Problem 1 - backward_euler')
+    ax.grid()
     plt.show()
 
 def problem_4_truncation_error(method = "backward"):
@@ -431,7 +434,9 @@ def problem_4_truncation_error(method = "backward"):
 
 
 
-#problem_1_truncation_error("crank_nicolson")
+problem_1_truncation_error("backward")
+
+
 
 
 
