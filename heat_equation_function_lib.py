@@ -5,9 +5,9 @@ heat_equation_function_lib.py:
 This function library contians implementations of finite differnce schemes for numerically solving the heat/diffusion equation in 1D.
 The schemese included are backwards-euler method and crank-nicolson method. Below is a list of included functions; see main functions below for more detail.
 
--   initilise_numerical_variables(params)
+-   initialise_numerical_variables(params)
 
--   initlise_solution_variables(init_con, x)
+-   initialise_solution_variables(init_con, x)
 
 -   generate_tridiag_matrix(dim, entries)
 
