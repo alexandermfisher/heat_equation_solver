@@ -34,7 +34,7 @@ from scipy.sparse.linalg import spsolve
  
 # peliminary functions to reduce code in the main 'numerical scheme' functions to follow
 
-def initilise_numerical_variables(params):
+def initialise_numerical_variables(params):
     
     kappa, L, T, mx, mt = params            # unpack parameters
 
@@ -46,7 +46,7 @@ def initilise_numerical_variables(params):
 
     return x, t, deltax, deltat, lmbda
 
-def initlise_solution_variables(init_con, x):
+def initialise_solution_variables(init_con, x):
 
     u_j = np.zeros(x.size)                  # u at current time step
     u_jn = np.zeros(x.size)                 # u at next time step
@@ -129,7 +129,7 @@ def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
     # unpack parmaaters and initilise numerical variables and boundry conditions. 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
-    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    x, t, deltax, deltat, lmbda = initialise_numerical_variables(params)
     left_BC = left_BC_fun(t) ;  right_BC = right_BC_fun(t)
     
 
@@ -137,7 +137,7 @@ def backward_euler_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
     A = generate_tridiag_matrix(mx,[1+2*lmbda,-lmbda])
     
     # Initlise soulution variables and insert dirichlet boundry conditions.
-    u_j, u_jn = initlise_solution_variables(u_I,x)
+    u_j, u_jn = initialise_solution_variables(u_I,x)
     u_j[0] = left_BC[0];    u_j[-1] = right_BC[0]
     
 
@@ -204,7 +204,7 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     # unpack parmaaters and initilise numerical variables and boundry conditions. 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
-    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    x, t, deltax, deltat, lmbda = initialise_numerical_variables(params)
     left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
     
 
@@ -213,7 +213,7 @@ def backward_euler_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
     A[0,1] = -2*lmbda; A[-1,-2] = -2*lmbda;
 
     # Iniitlise soulution variables
-    u_j, u_jn = initlise_solution_variables(u_I,x)
+    u_j, u_jn = initialise_solution_variables(u_I,x)
 
 
     # solve linear system by time stepping and update current u_j = (x,t) 
@@ -237,7 +237,7 @@ def crank_nicolson_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
-    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    x, t, deltax, deltat, lmbda = initialise_numerical_variables(params)
     left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
 
 
@@ -252,7 +252,7 @@ def crank_nicolson_solver_dirichlet(init_con, params, left_BC_fun = lambda t: 0*
     
 
     # Initlise soulution variables and insert dirichlet boundry conditions.
-    u_j, u_jn = initlise_solution_variables(u_I,x)
+    u_j, u_jn = initialise_solution_variables(u_I,x)
     u_j[0] = left_BC[0];    u_j[-1] = right_BC[0]
     
 
@@ -280,7 +280,7 @@ def crank_nicolson_solver_neumann(init_con, params, left_BC_fun = lambda t: 0*t,
 
     kappa, L, T, mx, mt = params
     u_I = init_con; f = source_fun
-    x, t, deltax, deltat, lmbda = initilise_numerical_variables(params)
+    x, t, deltax, deltat, lmbda = initialise_numerical_variables(params)
     left_BC = left_BC_fun(t);   right_BC = right_BC_fun(t)
 
     # Data Structure for linear system using sparse matrices:

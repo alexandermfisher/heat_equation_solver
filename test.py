@@ -256,7 +256,91 @@ problem_5("backward"); problem_5("crank_nicolson")
 ### Investigating Truncation Error:
 
 
-def problem_4_truncation_error(method = "crank_nicolson"):
+def problem_1_truncation_error(method = "backward"):
+
+    """
+    Problem 1:  Homogeneous Dirichelt BCs
+    
+    u_t = kappa u_xx  0<x<L, 0<t<T
+    with zero-temperature boundary conditions, u=0 at x=0,L, t>0
+    and prescribed initial temperature u=u_I(x) 0<=x<=L,t=0
+
+    """
+    # set problem parameters/functions
+    kappa = 1.0   # diffusion constant
+    L=1.0         # length of spatial domain
+    T=0.6        # total time to solve for
+
+    def u_I(x):
+        # initial temperature distribution
+        y = np.sin(pi*x/L)
+        return y
+
+    def u_exact(x,t):
+        # the exact solution
+        y = np.exp(-kappa*(pi**2/L**2)*t)*np.sin(pi*x/L)
+        return y
+
+
+
+    def error_dt(mt):
+
+        # set numerical parameters
+        mx = 100  # number of gridpoints in space
+        mt = mt  # number of gridpoints in time
+
+        params = [kappa,L,T,mx,mt]
+
+        if method == "backward":        u_j = solver.backward_euler_solver_dirichlet(u_I,params)
+        if method == "crank_nicolson":  u_j = solver.crank_nicolson_solver_dirichlet(u_I,params)
+
+
+        x = np.linspace(0, L, mx+1)     
+        t = np.linspace(0, T, mt+1)  
+        deltat = t[1]-t[0]
+        u_true = np.zeros(x.size)  
+        for i in range(0, x.size):  
+            u_true[i] = u_exact(x[i],T)
+
+        error = sum((u_true[:]-u_j[:])**2)
+        
+        return [deltat, error]
+
+
+
+    def error_dx(mx):
+
+        # set numerical parameters
+        mx = mx  # number of gridpoints in space
+        mt = 1000  # number of gridpoints in time
+
+        params = [kappa,L,T,mx,mt]
+
+        if method == "backward":        u_j = solver.backward_euler_solver_dirichlet(u_I,params)
+        if method == "crank_nicolson":  u_j = solver.crank_nicolson_solver_dirichlet(u_I,params)
+
+
+        x = np.linspace(0, L, mx+1)     
+        t = np.linspace(0, T, mt+1)  
+        deltax = x[1]-x[0]
+        u_true = np.zeros(x.size)  
+        for i in range(0, x.size):  
+            u_true[i] = u_exact(x[i],T)
+
+        error = sum((u_true[:]-u_j[:])**2)
+        
+        return [deltax, error]
+    
+    x1 = np.logspace(1, 4, 100, endpoint=True)
+    x2 = list(range(9,10000,100))
+    results = np.zeros((len(x1),2))
+    for i in range(len(x1)):
+        results[i,:] = error_dt(int(x1[i]))
+
+    plt.loglog(results[:,0], results[:,1],'b-',label='exact')
+    plt.show()
+
+def problem_4_truncation_error(method = "backward"):
     """
     Problem 4:  Dirichelt BCs dependant on time, non-homogeneous Heat equation with source.)
     
@@ -288,7 +372,7 @@ def problem_4_truncation_error(method = "crank_nicolson"):
     right_BC_fun = lambda t: -np.exp(-t)+4*t+1
 
 
-    def error(mt):
+    def error_dt(mt):
 
         # set numerical parameters
         mx = 100  # number of gridpoints in space
@@ -310,20 +394,44 @@ def problem_4_truncation_error(method = "crank_nicolson"):
         error = sum((u_true[:]-u_j[:])**2)
         
         return [deltat, error]
+
+
+
+    def error_dx(mx):
+
+        # set numerical parameters
+        mx = mx  # number of gridpoints in space
+        mt = 1000  # number of gridpoints in time
+
+        params = [kappa,L,T,mx,mt]
+
+        if method == "backward":        u_j = solver.backward_euler_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
+        if method == "crank_nicolson":  u_j = solver.crank_nicolson_solver_dirichlet(u_I,params,left_BC_fun,right_BC_fun,source)
+
+
+        x = np.linspace(0, L, mx+1)     
+        t = np.linspace(0, T, mt+1)  
+        deltax = x[1]-x[0]
+        u_true = np.zeros(x.size)  
+        for i in range(0, x.size):  
+            u_true[i] = u_exact(x[i],T)
+
+        error = sum((u_true[:]-u_j[:])**2)
+        
+        return [deltax, error]
     
     
     x1 = list(range(9,1000,10))
     results = np.zeros((len(x1),2))
     for i in range(len(x1)):
-        results[i,:] = error(int(x1[i]))
+        results[i,:] = error_dx(int(x1[i]))
 
     plt.loglog(results[:,0], results[:,1],'b-',label='exact')
     plt.show()
 
 
-   
 
-problem_4_truncation_error()
+#problem_1_truncation_error("crank_nicolson")
 
 
 
